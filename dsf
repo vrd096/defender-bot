@@ -1,0 +1,36 @@
+[33mcommit fb7dc891d5dd4941a0f1e3fa5ea93174a5980264[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Author: vrd096 <48715486+vrd096@users.noreply.github.com>
+Date:   Tue Mar 4 13:47:00 2025 +0500
+
+    инициализация бота
+
+ config/keep | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+[33mcommit b35a0662b3e856c801d1b014e5f16b1fe424a88c[m
+Author: vrd096 <48715486+vrd096@users.noreply.github.com>
+Date:   Tue Mar 4 13:45:02 2025 +0500
+
+    инициализация бота
+
+ index.js          |  4 [32m++[m[31m--[m
+ package-lock.json | 13 [32m+++++++++++++[m
+ package.json      |  1 [32m+[m
+ 3 files changed, 16 insertions(+), 2 deletions(-)
+
+[33mcommit 09119f9880c05bcbbda7c3106cbe6a81bc6f5636[m
+Author: vrd096 <48715486+vrd096@users.noreply.github.com>
+Date:   Tue Mar 4 11:18:33 2025 +0500
+
+    инициализация бота
+
+ .gitignore                                         |  29 [32m+[m
+ config/keep                                        |   0
+ index.js                                           |  97 [32m++[m
+ package-lock.json                                  | 977 [32m+++++++++++++++++++++[m
+ package.json                                       |  19 [32m+[m
+ reputation.json                                    |  29 [32m+[m
+ ...24 \320\272\320\276\320\277\320\270\321\217.js" |  51 [32m++[m
+ src/messageHandler.js                              | 117 [32m+++[m
+ src/reputationHandler.js                           | 114 [32m+++[m
+ 9 files changed, 1433 insertions(+)
