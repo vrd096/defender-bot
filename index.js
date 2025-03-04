@@ -2,11 +2,19 @@ import { Telegraf } from 'telegraf';
 import { handleMessage } from './src/messageHandler.js';
 const { updateReputation, getReputationList } = await import('./src/reputationHandler.js');
 import 'dotenv/config';
+import express from 'express';
 
+// Инициализация Telegram бота
 const BOT_TOKEN = process.env.TELEGRAM_TOKEN;
+
+if (!BOT_TOKEN) {
+  console.error('TELEGRAM_TOKEN не найден в переменных окружения.');
+  process.exit(1);
+}
 
 const bot = new Telegraf(BOT_TOKEN);
 
+// Обработчик команды /start
 bot.command('start', async (ctx) => {
   try {
     await ctx.reply('Жду вашего голосового или текстового сообщения');
@@ -74,6 +82,7 @@ bot.on('text', (ctx) => {
   }
 });
 
+// Обработка действия "rating"
 bot.action('rating', async (ctx) => {
   try {
     await ctx.answerCbQuery();
@@ -84,14 +93,47 @@ bot.action('rating', async (ctx) => {
   }
 });
 
+// Глобальный обработчик ошибок
 bot.catch((error) => {
   console.error('Глобальная ошибка бота:', error);
   // Логирование или отправка уведомления разработчику
 });
 
+// Запуск бота
 bot.launch();
 
 console.log('Бот запущен');
 
+// Добавление HTTP-сервера для Render
+const app = express();
+
+// Эндпоинт для проверки работы сервера
+app.get('/ping', (req, res) => {
+  res.send('Pong!');
+});
+
+// Запуск сервера на порту, предоставленном Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`HTTP-сервер запущен на порту ${PORT}`);
+});
+
+// Настройка периодической активности (раз в 10 минут)
+setInterval(() => {
+  console.log('Отправка запроса для поддержания активности...');
+  fetch(`http://localhost:${PORT}/ping`)
+    .then((response) => {
+      if (response.ok) {
+        console.log('Сервер активен.');
+      } else {
+        console.error('Ошибка при проверке активности сервера.');
+      }
+    })
+    .catch((error) => {
+      console.error('Не удалось отправить запрос для поддержания активности:', error);
+    });
+}, 10 * 60 * 1000); // 10 минут в миллисекундах
+
+// Обработка сигналов завершения
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
