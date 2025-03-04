@@ -10,6 +10,7 @@
   "dependencies": {
     "@gradio/client": "^1.13.0",
     "config": "^3.3.12",
+    "dotenv": "^16.4.7",
     "fs-extra": "^11.1.1",
     "telegraf": "^4.12.2"
   },

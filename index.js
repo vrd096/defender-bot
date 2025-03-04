@@ -1,9 +1,9 @@
 import { Telegraf } from 'telegraf';
 import { handleMessage } from './src/messageHandler.js';
 const { updateReputation, getReputationList } = await import('./src/reputationHandler.js');
-import config from 'config';
+import 'dotenv/config';
 
-const BOT_TOKEN = config.get('TELEGRAM_TOKEN');
+const BOT_TOKEN = process.env.TELEGRAM_TOKEN;
 
 const bot = new Telegraf(BOT_TOKEN);
 
