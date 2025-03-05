@@ -26,6 +26,7 @@ bot.command('start', async (ctx) => {
 // Приветствие новых участников
 bot.on('new_chat_members', (ctx) => {
   try {
+    console.log('Событие new_chat_members сработало'); // Лог для диагностики
     const chatTitle = ctx.chat.title || 'группу'; // Название группы или "группу", если название отсутствует
     const members = ctx.message.new_chat_members; // Массив новых участников
 
