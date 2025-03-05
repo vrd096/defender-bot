@@ -26,19 +26,32 @@ bot.command('start', async (ctx) => {
 // Приветствие новых участников
 bot.on('new_chat_members', (ctx) => {
   try {
-    console.log('Событие new_chat_members сработало'); // Лог для диагностики
+    console.log('Событие new_chat_members вызвано'); // Лог для диагностики
+
+    // Проверка, что событие содержит новых участников
+    if (!ctx.message || !ctx.message.new_chat_members) {
+      console.error('Нет данных о новых участниках:', ctx.message);
+      return;
+    }
+
     const chatTitle = ctx.chat.title || 'группу'; // Название группы или "группу", если название отсутствует
     const members = ctx.message.new_chat_members; // Массив новых участников
 
+    console.log(`Новые участники: ${members.length}`); // Лог количества новых участников
+
     members.forEach((member) => {
-      ctx.reply(
-        `Добро пожаловать в "${chatTitle}", ${
-          member.first_name ? member.first_name : 'участник'
-        }! Здесь мы обсуждаем финансовые инструменты, делимся своими идеями. Напишите /rules в чате, чтобы ознакомиться с правилами.`,
-      );
+      const welcomeMessage = `Добро пожаловать в "${chatTitle}", ${
+        member.first_name ? member.first_name : 'участник'
+      }! Здесь мы обсуждаем финансовые инструменты, делимся своими идеями. Напишите /rules в чате, чтобы ознакомиться с правилами.`;
+
+      console.log(`Отправка приветствия для ${member.first_name || 'участника'}`); // Лог перед отправкой
+
+      ctx.reply(welcomeMessage).catch((error) => {
+        console.error('Ошибка при отправке приветствия:', error);
+      });
     });
   } catch (error) {
-    console.error('Ошибка при отправке приветствия новому участнику:', error);
+    console.error('Ошибка в обработчике new_chat_members:', error);
   }
 });
 
