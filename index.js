@@ -24,14 +24,18 @@ bot.command('start', async (ctx) => {
 });
 
 // Приветствие новых участников
-bot.on('new_chat_member', (ctx) => {
+bot.on('new_chat_members', (ctx) => {
   try {
-    const member = ctx.message.new_chat_member;
-    ctx.reply(
-      `Добро пожаловать в Трейдинг чат, ${
-        member.first_name ? member.first_name : 'участник'
-      }! Здесь мы обсуждаем финансовые инструменты, делимся своими идеями. Напишите /rules в чате, для того чтобы ознакомиться с правилами.`,
-    );
+    const chatTitle = ctx.chat.title || 'группу'; // Название группы или "группу", если название отсутствует
+    const members = ctx.message.new_chat_members; // Массив новых участников
+
+    members.forEach((member) => {
+      ctx.reply(
+        `Добро пожаловать в "${chatTitle}", ${
+          member.first_name ? member.first_name : 'участник'
+        }! Здесь мы обсуждаем финансовые инструменты, делимся своими идеями. Напишите /rules в чате, чтобы ознакомиться с правилами.`,
+      );
+    });
   } catch (error) {
     console.error('Ошибка при отправке приветствия новому участнику:', error);
   }
