@@ -109,6 +109,7 @@ const app = express();
 
 // Эндпоинт для проверки работы сервера
 app.get('/ping', (req, res) => {
+  console.log('Получен запрос на /ping');
   res.send('Pong!');
 });
 
@@ -117,22 +118,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`HTTP-сервер запущен на порту ${PORT}`);
 });
-
-// Настройка периодической активности (раз в 10 минут)
-setInterval(() => {
-  console.log('Отправка запроса для поддержания активности...');
-  fetch(`http://localhost:${PORT}/ping`)
-    .then((response) => {
-      if (response.ok) {
-        console.log('Сервер активен.');
-      } else {
-        console.error('Ошибка при проверке активности сервера.');
-      }
-    })
-    .catch((error) => {
-      console.error('Не удалось отправить запрос для поддержания активности:', error);
-    });
-}, 10 * 60 * 1000); // 10 минут в миллисекундах
 
 // Обработка сигналов завершения
 process.once('SIGINT', () => bot.stop('SIGINT'));
