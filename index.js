@@ -158,19 +158,19 @@ bot.launch();
 console.log('Бот запущен');
 
 // Добавление HTTP-сервера для Render
-// const app = express();
+const app = express();
 
-// // Эндпоинт для проверки работы сервера
-// app.get('/ping', (req, res) => {
-//   console.log('Получен запрос на /ping');
-//   res.send('Pong!');
-// });
+// Эндпоинт для проверки работы сервера
+app.get('/ping', (req, res) => {
+  console.log('Получен запрос на /ping');
+  res.send('Pong!');
+});
 
-// // Запуск сервера на порту, предоставленном Render
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`HTTP-сервер запущен на порту ${PORT}`);
-// });
+// Запуск сервера на порту, предоставленном Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`HTTP-сервер запущен на порту ${PORT}`);
+});
 
 // Обработка сигналов завершения
 process.once('SIGINT', () => bot.stop('SIGINT'));
