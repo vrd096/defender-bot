@@ -34,15 +34,23 @@ bot.on('new_chat_members', (ctx) => {
       return;
     }
 
+    const botId = ctx.botInfo.id;
+
     const chatTitle = ctx.chat.title || 'группу'; // Название группы или "группу", если название отсутствует
     const members = ctx.message.new_chat_members; // Массив новых участников
 
     console.log(`Новые участники: ${members.length}`); // Лог количества новых участников
 
     members.forEach((member) => {
+      // Проверяем, является ли новый участник самим ботом
+      if (member.id === botId) {
+        console.log('Бот присоединился к группе, приветствие не отправляется.');
+        return;
+      }
+
       const welcomeMessage = `Добро пожаловать в "${chatTitle}", ${
         member.first_name ? member.first_name : 'участник'
-      }! Здесь мы обсуждаем финансовые инструменты, делимся своими идеями. Напишите /rules в чате, чтобы ознакомиться с правилами.`;
+      }! Напишите /rules в чате, чтобы ознакомиться с правилами.`;
 
       console.log(`Отправка приветствия для ${member.first_name || 'участника'}`); // Лог перед отправкой
 
@@ -55,6 +63,33 @@ bot.on('new_chat_members', (ctx) => {
   }
 });
 
+bot.on('chat_member', (ctx) => {
+  try {
+    const chatMember = ctx.update.chat_member;
+
+    // Проверяем, что пользователь стал участником группы
+    if (chatMember.new_chat_member.status === 'member') {
+      const member = chatMember.new_chat_member.user;
+      const botId = ctx.botInfo.id;
+      if (member.id === botId) {
+        console.log('Бот присоединился к группе, приветствие не отправляется.');
+        return;
+      }
+
+      const chatTitle = ctx.chat.title || 'группу';
+
+      const welcomeMessage = `Добро пожаловать обратно в "${chatTitle}", ${
+        member.first_name ? member.first_name : 'участник'
+      }!`;
+
+      ctx.reply(welcomeMessage).catch((error) => {
+        console.error('Ошибка при отправке приветствия:', error);
+      });
+    }
+  } catch (error) {
+    console.error('Ошибка в обработчике chat_member:', error);
+  }
+});
 // Отправка правил
 bot.command('rules', (ctx) => {
   try {
@@ -123,19 +158,19 @@ bot.launch();
 console.log('Бот запущен');
 
 // Добавление HTTP-сервера для Render
-const app = express();
+// const app = express();
 
-// Эндпоинт для проверки работы сервера
-app.get('/ping', (req, res) => {
-  console.log('Получен запрос на /ping');
-  res.send('Pong!');
-});
+// // Эндпоинт для проверки работы сервера
+// app.get('/ping', (req, res) => {
+//   console.log('Получен запрос на /ping');
+//   res.send('Pong!');
+// });
 
-// Запуск сервера на порту, предоставленном Render
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`HTTP-сервер запущен на порту ${PORT}`);
-});
+// // Запуск сервера на порту, предоставленном Render
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`HTTP-сервер запущен на порту ${PORT}`);
+// });
 
 // Обработка сигналов завершения
 process.once('SIGINT', () => bot.stop('SIGINT'));

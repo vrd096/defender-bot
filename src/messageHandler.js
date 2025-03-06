@@ -1,4 +1,9 @@
 import { Client } from '@gradio/client';
+import fs from 'fs';
+import path from 'path';
+
+// Путь к файлу с предупреждениями
+const WARNINGS_FILE = path.resolve('warnings.json');
 
 // Список пользователей, у которых нарушения игнорируются (например, владельцы группы или специальные пользователи)
 const exemptUsers = [178999805]; // Замените эти числа на реальные ID пользователей
@@ -29,6 +34,31 @@ const triggers = [
   'польза',
   'пишите',
 ];
+
+// Функция для загрузки предупреждений из файла
+function loadWarnings() {
+  try {
+    if (fs.existsSync(WARNINGS_FILE)) {
+      const data = fs.readFileSync(WARNINGS_FILE, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке предупреждений:', error);
+  }
+  return {};
+}
+
+// Функция для сохранения предупреждений в файл
+function saveWarnings(warnings) {
+  try {
+    fs.writeFileSync(WARNINGS_FILE, JSON.stringify(warnings, null, 2));
+  } catch (error) {
+    console.error('Ошибка при сохранении предупреждений:', error);
+  }
+}
+
+// Загружаем предупреждения при старте
+let userWarnings = loadWarnings();
 
 // Функция для проверки сообщения через API спама
 async function checkSpamWithAPI(text) {
@@ -65,6 +95,58 @@ function checkSpamWithTriggers(text) {
   return triggerCount >= 2; // Сообщение считается спамом, если найдено 2 или более триггеров
 }
 
+// Функция для проверки наличия ссылок на Telegram группы
+function containsTelegramGroupLink(text) {
+  const telegramLinkRegex = /https?:\/\/(t\.me|telegram\.me)\/\w+/i;
+  return telegramLinkRegex.test(text);
+}
+
+// Функция для выдачи предупреждения и бана пользователя
+async function handleUserWarning(ctx, userId, username) {
+  const chatId = ctx.chat.id;
+
+  // Инициализируем предупреждения для чата, если их еще нет
+  if (!userWarnings[chatId]) {
+    userWarnings[chatId] = {};
+  }
+
+  // Получаем текущее количество предупреждений для пользователя в этом чате
+  const warnings = userWarnings[chatId][userId] || 0;
+
+  if (warnings < 2) {
+    // Если меньше 3 предупреждений, выдаем предупреждение
+    userWarnings[chatId][userId] = warnings + 1;
+    saveWarnings(userWarnings); // Сохраняем обновленные предупреждения
+    await ctx.reply(
+      `${username}, вы получили предупреждение за нарушение правил. У вас ${
+        warnings + 1
+      }/3 предупреждений. За 3 предупреждения вас забанят навсегда.`,
+    );
+  } else {
+    // Если 3 предупреждения, баним пользователя навсегда
+    try {
+      await ctx.banChatMember(userId, { revoke_messages: true }); // Бан навсегда
+      await ctx.reply(`${username} был забанен навсегда за 3 нарушения правил.`);
+    } catch (error) {
+      console.error('Ошибка при бане пользователя:', error);
+      await ctx.reply(`Не удалось забанить пользователя ${username}. Проверьте права бота.`);
+    }
+    delete userWarnings[chatId][userId]; // Удаляем пользователя из списка предупреждений
+    saveWarnings(userWarnings); // Сохраняем обновленные предупреждения
+  }
+}
+
+// Функция для проверки, является ли пользователь администратором
+async function isAdmin(ctx, userId) {
+  try {
+    const admins = await ctx.getChatAdministrators();
+    return admins.some((admin) => admin.user.id === userId);
+  } catch (error) {
+    console.error('Ошибка при получении списка администраторов:', error);
+    return false;
+  }
+}
+
 export const handleMessage = (ctx) => {
   processSingleMessage(ctx, ctx.message);
 };
@@ -73,10 +155,21 @@ export const handleMessage = (ctx) => {
 const processSingleMessage = async (ctx, message) => {
   const messageText = message.text || '';
   const userId = message.from.id;
+  const username = message.from.username ? `@${message.from.username}` : message.from.first_name;
+  const chatId = ctx.chat.id;
 
-  // Игнорируем сообщения от пользователей из списка exemptUsers
-  if (exemptUsers.includes(userId)) {
+  // Игнорируем сообщения от пользователей из списка exemptUsers и администраторов
+  if (exemptUsers.includes(userId) || (await isAdmin(ctx, userId))) {
     return;
+  }
+
+  // Проверка на наличие ссылок на Telegram группы
+  if (containsTelegramGroupLink(messageText)) {
+    await ctx.deleteMessage(message.message_id).catch((err) => {
+      console.error('Ошибка при удалении сообщения:', err);
+    });
+    await handleUserWarning(ctx, userId, username);
+    return; // Прекращаем дальнейшую обработку сообщения
   }
 
   // Проверяем только сообщения длиннее 150 символов
@@ -94,23 +187,19 @@ const processSingleMessage = async (ctx, message) => {
 
     // Если сообщение считается спамом
     if (isSpam) {
-      await ctx
-        .deleteMessage(message.message_id)
-        .catch((err) => console.error('Ошибка при удалении сообщения:', err));
-      const username = message.from.username
-        ? `@${message.from.username}`
-        : message.from.first_name;
-      ctx.reply(`${username}, пожалуйста, воздержитесь от публикации рекламы.`);
+      await ctx.deleteMessage(message.message_id).catch((err) => {
+        console.error('Ошибка при удалении сообщения:', err);
+      });
+      await handleUserWarning(ctx, userId, username);
     }
   }
 
   // Проверка на длину сообщения (более 500 символов)
   if (messageText.length > 500) {
-    await ctx
-      .deleteMessage(message.message_id)
-      .catch((err) => console.error('Ошибка при удалении сообщения (длина):', err));
-    const username = message.from.username ? `@${message.from.username}` : message.from.first_name;
-    ctx.reply(
+    await ctx.deleteMessage(message.message_id).catch((err) => {
+      console.error('Ошибка при удалении сообщения (длина):', err);
+    });
+    await ctx.reply(
       `${username}, пожалуйста, не отправляйте такие длинные сообщения, это запрещено правилами.`,
     );
   }
