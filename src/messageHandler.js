@@ -97,7 +97,9 @@ function checkSpamWithTriggers(text) {
 
 // Функция для проверки наличия ссылок на Telegram группы
 function containsTelegramGroupLink(text) {
-  const telegramLinkRegex = /https?:\/\/(t\.me|telegram\.me)\/\w+/i;
+  const telegramLinkRegex =
+    /https?:\/\/(t\.me|telegram\.me)(\/joinchat\/\S+|\/\+?[A-Za-z0-9_\-]+)/i;
+  console.log(telegramLinkRegex.test(text));
   return telegramLinkRegex.test(text);
 }
 
