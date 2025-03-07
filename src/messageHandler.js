@@ -61,30 +61,30 @@ function saveWarnings(warnings) {
 let userWarnings = loadWarnings();
 
 // Функция для проверки сообщения через API спама
-async function checkSpamWithAPI(text) {
-  try {
-    const client = await Client.connect('Subhajit01/spam_detection_poweredby_custom_GPT');
-    const result = await client.predict('/classify', {
-      text: text,
-    });
+// async function checkSpamWithAPI(text) {
+//   try {
+//     const client = await Client.connect('Subhajit01/spam_detection_poweredby_custom_GPT');
+//     const result = await client.predict('/classify', {
+//       text: text,
+//     });
 
-    // Логируем ответ API для отладки
-    // console.log('API Response:', result);
+//     // Логируем ответ API для отладки
+//     // console.log('API Response:', result);
 
-    // Обрабатываем ответ API
-    if (result.data && Array.isArray(result.data) && result.data[0]) {
-      const label = result.data[0].toLowerCase(); // Получаем первый элемент массива и приводим к нижнему регистру
-      return label === 'spam'; // Возвращаем true, если метка "spam"
-    }
+//     // Обрабатываем ответ API
+//     if (result.data && Array.isArray(result.data) && result.data[0]) {
+//       const label = result.data[0].toLowerCase(); // Получаем первый элемент массива и приводим к нижнему регистру
+//       return label === 'spam'; // Возвращаем true, если метка "spam"
+//     }
 
-    // Если формат ответа неожиданный, возвращаем null
-    console.error('Неожиданный формат ответа API:', result);
-    return null;
-  } catch (error) {
-    console.error('Ошибка при проверке сообщения через API:', error);
-    return null; // Возвращаем null, если API недоступен или произошла ошибка
-  }
-}
+//     // Если формат ответа неожиданный, возвращаем null
+//     console.error('Неожиданный формат ответа API:', result);
+//     return null;
+//   } catch (error) {
+//     console.error('Ошибка при проверке сообщения через API:', error);
+//     return null; // Возвращаем null, если API недоступен или произошла ошибка
+//   }
+// }
 
 // Функция для проверки сообщения с использованием триггерных слов
 function checkSpamWithTriggers(text) {
@@ -177,7 +177,8 @@ const processSingleMessage = async (ctx, message) => {
     let isSpam = false;
 
     // Сначала проверяем через API спама
-    const apiResult = await checkSpamWithAPI(messageText);
+    // const apiResult = await checkSpamWithAPI(messageText);
+    const apiResult = null;
     if (apiResult !== null) {
       isSpam = apiResult; // Используем результат API
     } else {
