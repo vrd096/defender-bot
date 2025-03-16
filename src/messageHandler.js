@@ -8,7 +8,6 @@ const WARNINGS_FILE = path.resolve('warnings.json');
 // Список пользователей, у которых нарушения игнорируются (например, владельцы группы или специальные пользователи)
 const exemptUsers = [178999805]; // Замените эти числа на реальные ID пользователей
 
-// Заданные триггерные слова
 const triggers = [
   'курсы',
   'видеоуроки',
@@ -99,7 +98,6 @@ function checkSpamWithTriggers(text) {
 function containsTelegramGroupLink(text) {
   const telegramLinkRegex =
     /https?:\/\/(t\.me|telegram\.me)(\/joinchat\/\S+|\/\+?[A-Za-z0-9_\-]+)/i;
-  console.log(telegramLinkRegex.test(text));
   return telegramLinkRegex.test(text);
 }
 
