@@ -2,11 +2,13 @@ import { Client } from '@gradio/client';
 import fs from 'fs';
 import path from 'path';
 
+// Путь к файлу с предупреждениями
 const WARNINGS_FILE = path.resolve('warnings.json');
 
 // Список пользователей, у которых нарушения игнорируются (например, владельцы группы или специальные пользователи)
 const exemptUsers = [178999805]; // Замените эти числа на реальные ID пользователей
 
+// Заданные триггерные слова
 const triggers = [
   'курсы',
   'видеоуроки',
@@ -31,6 +33,10 @@ const triggers = [
   'полезна',
   'польза',
   'пишите',
+  'доп',
+  'дополнительный',
+  'заработка',
+  'заработок',
 ];
 
 // Функция для загрузки предупреждений из файла
@@ -172,7 +178,7 @@ const processSingleMessage = async (ctx, message) => {
   }
 
   // Проверяем только сообщения длиннее 150 символов
-  if (messageText.length > 150) {
+  if (messageText.length > 100) {
     let isSpam = false;
 
     // Сначала проверяем через API спама
