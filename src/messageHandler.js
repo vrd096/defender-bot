@@ -2,7 +2,7 @@ import { Client } from '@gradio/client';
 import fs from 'fs';
 import path from 'path';
 
-// Путь к файлу с предупреждениями
+// Путь к файлу с предупреждениям
 const WARNINGS_FILE = path.resolve('warnings.json');
 
 // Список пользователей, у которых нарушения игнорируются (например, владельцы группы или специальные пользователи)
