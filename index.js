@@ -26,7 +26,7 @@ bot.command('start', async (ctx) => {
 // Приветствие новых участников
 bot.on('new_chat_members', (ctx) => {
   try {
-    console.log('Событие new_chat_members вызвано'); // Лог для диагностики
+    console.log('Событие new_chat_members вызвано'); // Лог для диагностик
 
     // Проверка, что событие содержит новых участников
     if (!ctx.message || !ctx.message.new_chat_members) {
