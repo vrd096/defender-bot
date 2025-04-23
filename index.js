@@ -4,7 +4,7 @@ const { updateReputation, getReputationList } = await import('./src/reputationHa
 import 'dotenv/config';
 import express from 'express';
 
-// Инициализация Telegram бота
+// Инициализация Telegram бот
 const BOT_TOKEN = process.env.TELEGRAM_TOKEN;
 
 if (!BOT_TOKEN) {
