@@ -209,8 +209,8 @@ const processSingleMessage = async (ctx, message) => {
     await ctx.deleteMessage(message.message_id).catch((err) => {
       console.error('Ошибка при удалении сообщения (длина):', err);
     });
-    await ctx.reply(
-      `${username}, пожалуйста, не отправляйте такие длинные сообщения, это запрещено правилами.`,
-    );
+    // await ctx.reply(
+    //   `${username}, пожалуйста, не отправляйте такие длинные сообщения, это запрещено правилами.`,
+    // );
   }
 };
