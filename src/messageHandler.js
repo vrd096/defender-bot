@@ -119,6 +119,24 @@ function containsTelegramGroupLink(text) {
   return telegramLinkRegex.test(text);
 }
 
+// Функция для отправки сообщения и его последующего удаления через заданное время
+async function replyThenDelete(ctx, text, delayMs = 60000) {
+  // 60000 мс = 1 минута
+  try {
+    const botMessage = await ctx.reply(text);
+    setTimeout(async () => {
+      try {
+        await ctx.deleteMessage(botMessage.message_id);
+      } catch (deleteError) {
+        console.error('Ошибка при удалении сообщения бота:', deleteError);
+        // Можно добавить логику, если сообщение уже удалено или нет прав
+      }
+    }, delayMs);
+  } catch (replyError) {
+    console.error('Ошибка при отправке сообщения бота:', replyError);
+  }
+}
+
 // Функция для выдачи предупреждения и бана пользователя
 async function handleUserWarning(ctx, userId, username) {
   const chatId = ctx.chat.id;
@@ -135,7 +153,8 @@ async function handleUserWarning(ctx, userId, username) {
     // Если меньше 3 предупреждений, выдаем предупреждение
     userWarnings[chatId][userId] = warnings + 1;
     saveWarnings(userWarnings); // Сохраняем обновленные предупреждения
-    await ctx.reply(
+    await replyThenDelete(
+      ctx,
       `${username}, вы получили предупреждение за нарушение правил. У вас ${
         warnings + 1
       }/3 предупреждений. За 3 предупреждения вас забанят навсегда.`,
@@ -144,10 +163,13 @@ async function handleUserWarning(ctx, userId, username) {
     // Если 3 предупреждения, баним пользователя навсегда
     try {
       await ctx.banChatMember(userId, { revoke_messages: true }); // Бан навсегда
-      await ctx.reply(`${username} был забанен навсегда за 3 нарушения правил.`);
+      await replyThenDelete(ctx, `${username} был забанен навсегда за 3 нарушения правил.`);
     } catch (error) {
       console.error('Ошибка при бане пользователя:', error);
-      await ctx.reply(`Не удалось забанить пользователя ${username}. Проверьте права бота.`);
+      await replyThenDelete(
+        ctx,
+        `Не удалось забанить пользователя ${username}. Проверьте права бота.`,
+      );
     }
     delete userWarnings[chatId][userId]; // Удаляем пользователя из списка предупреждений
     saveWarnings(userWarnings); // Сохраняем обновленные предупреждения
@@ -190,7 +212,7 @@ const processSingleMessage = async (ctx, message) => {
     return; // Прекращаем дальнейшую обработку сообщения
   }
 
-  // Проверяем только сообщения длиннее 150 символов
+  // Проверяем только сообщения длиннее 100 символов
   if (messageText.length > 100) {
     let isSpam = false;
 
@@ -218,8 +240,9 @@ const processSingleMessage = async (ctx, message) => {
     await ctx.deleteMessage(message.message_id).catch((err) => {
       console.error('Ошибка при удалении сообщения (длина):', err);
     });
-    // await ctx.reply(
-    //   `${username}, пожалуйста, не отправляйте такие длинные сообщения, это запрещено правилами.`,
+    // await replyThenDelete(
+    //   ctx,
+    //   `${username}, ваше сообщение было удалено, так как оно слишком длинное (более 500 символов).`
     // );
   }
 };
