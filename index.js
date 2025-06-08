@@ -137,7 +137,8 @@ bot.command('rules', async (ctx) => {
 bot.command('rating', async (ctx) => {
   try {
     const reputationList = await getReputationList(ctx);
-    ctx.reply(reputationList);
+
+    await replyThenDelete(ctx, reputationList);
   } catch (error) {
     console.error('Ошибка при получении списка репутации:', error);
   }
@@ -159,6 +160,7 @@ bot.action('rating', async (ctx) => {
     await ctx.answerCbQuery();
     const reputationList = await getReputationList(ctx);
     ctx.reply(reputationList);
+    await replyThenDelete(ctx, reputationList);
   } catch (error) {
     console.error('Ошибка при обработке действия "rating":', error);
   }
