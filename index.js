@@ -14,10 +14,27 @@ if (!BOT_TOKEN) {
 
 const bot = new Telegraf(BOT_TOKEN);
 
+async function replyThenDelete(ctx, text, delayMs = 60000) {
+  // 60000 мс = 1 минута
+  try {
+    const botMessage = await ctx.reply(text);
+    setTimeout(async () => {
+      try {
+        await ctx.deleteMessage(botMessage.message_id);
+      } catch (deleteError) {
+        console.error('Ошибка при удалении сообщения бота:', deleteError);
+        // Можно добавить логику, если сообщение уже удалено или нет прав
+      }
+    }, delayMs);
+  } catch (replyError) {
+    console.error('Ошибка при отправке сообщения бота:', replyError);
+  }
+}
+
 // Обработчик команды /start
 bot.command('start', async (ctx) => {
   try {
-    await ctx.reply('Жду вашего голосового или текстового сообщения');
+    await replyThenDelete(ctx, 'Бот работает');
   } catch (error) {
     console.error('Ошибка при выполнении команды /start:', error);
   }
@@ -91,9 +108,10 @@ bot.on('chat_member', (ctx) => {
   }
 });
 // Отправка правил
-bot.command('rules', (ctx) => {
+bot.command('rules', async (ctx) => {
   try {
-    ctx.reply(
+    await replyThenDelete(
+      ctx,
       `1. В нашем чате запрещены оскорбления участников. \n2. Рекламировать свои услуги. \n3. Навязывать свою точку зрения. \n4. Присылать длинные сообщения (больше 500 символов).`,
     );
   } catch (error) {
@@ -102,18 +120,18 @@ bot.command('rules', (ctx) => {
 });
 
 // Команда админа для проверки
-bot.command('checkhistory', async (ctx) => {
-  try {
-    if (ctx.message.from.isAdministrator || ctx.message.from.isCreator) {
-      await ctx.reply('Проверка последних сообщений, в рамках текущих API возможностей.');
-      /* здесь можно реализовать метод, аналогичный предыдущим примерам */
-    } else {
-      await ctx.reply('У вас нет прав для этой команды.');
-    }
-  } catch (error) {
-    console.error('Ошибка при выполнении команды /checkhistory:', error);
-  }
-});
+// bot.command('checkhistory', async (ctx) => {
+//   try {
+//     if (ctx.message.from.isAdministrator || ctx.message.from.isCreator) {
+//       await ctx.reply('Проверка последних сообщений, в рамках текущих API возможностей.');
+//       /* здесь можно реализовать метод, аналогичный предыдущим примерам */
+//     } else {
+//       await ctx.reply('У вас нет прав для этой команды.');
+//     }
+//   } catch (error) {
+//     console.error('Ошибка при выполнении команды /checkhistory:', error);
+//   }
+// });
 
 // Отправка списка репутации
 bot.command('rating', async (ctx) => {
